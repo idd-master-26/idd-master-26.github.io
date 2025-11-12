@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
+    />
+<meta name="format-detection" content="telephone=no, email=no, address=no">
+    <title>
+      PRISM - 多摩美術大学大学院 情報デザイン研究領域 研究制作展 2025
+    </title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #000000;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+          "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo",
+          sans-serif;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+      }
+      #main-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        transform: translateZ(0);
+        will-change: transform;
+      }
+
+      .info-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        box-sizing: border-box;
+        pointer-events: none;
+        color: #ffffff;
+        z-index: 2;
+        mix-blend-mode: exclusion;
+      }
+
+      .half-section {
+        width: 100%;
+        height: 50dvh;
+        position: absolute;
+        left: 0;
+        overflow: hidden;
+      }
+
+      .top-half {
+        top: 0;
+      }
+
+      .bottom-half {
+        bottom: 0;
+        transform: rotate(180deg);
+      }
+
+      .info-block {
+        pointer-events: auto;
+        position: absolute;
+        padding: 40px;
+        font-size: 14px;
+        line-height: 1.3;
+      }
+
+      /* 左上ブロック（英語） */
+      .block-top-left {
+        top: 0;
+        left: 0;
+      }
+
+      /* 右上ブロック（日本語） */
+      .block-top-right {
+        top: 0;
+        right: 0;
+        display: flex;
+
+        /* ★★★ 変更点: flexの向きを縦(column)に変更 ★★★ */
+        flex-direction: column;
+        /* ★★★ 変更点: 主軸(縦)は上揃え、交差軸(横)は右揃え ★★★ */
+        align-items: flex-end; /* 右に揃える (交差軸) */
+      }
+
+      /* 日本語 縦組ブロック */
+      .vertical-jp {
+        writing-mode: vertical-rl; /* 縦組 */
+        text-align: left; /* 天揃え */
+        /* ★★★ 変更点: マージンを削除 ★★★ */
+        /* margin-left: 20px; */
+      }
+
+      /* 日本語 90度回転ブロック */
+      .rotated-jp {
+        transform: rotate(90deg);
+        /* ★★★ 変更点: 基準点を top right に変更 ★★★ */
+        transform-origin: top right;
+
+        /* ★★★ 変更点: 位置調整をマージンに変更 ★★★ */
+        margin-top: 200px; /* 上のブロックとのマージン */
+        text-align: left; /* テキストを右揃え（回転前） */
+        display: flex;
+        align-items: start;
+        gap: 15px;
+      }
+
+      .info-block h1 {
+        font-size: 24px;
+        margin: 0 0 15px 0;
+        font-weight: 700;
+      }
+
+      .block-top-right h1 {
+        margin: 0 0 15px 10px;
+      }
+
+      .info-block h2 {
+        font-size: 18px;
+        margin: 0 0 15px 0;
+        font-weight: 400;
+      }
+
+      .block-top-right h2 {
+        margin: 0 0 15px 10px;
+      }
+
+      .info-block p {
+        font-size: 13px;
+        color: #aaa;
+        margin-bottom: 4px;
+      }
+
+      .info-block .sub-text {
+        font-size: 8px;
+      }
+
+      .block-top-left .sub-text {
+        margin-top: 15px;
+      }
+
+      .block-top-right .sub-text {
+        margin-top: 0px;
+      }
+
+      .logo {
+        width: 24px;
+      }
+      .block-top-left .logo {
+        margin-top: 15px;
+      }
+      .sp {
+        display: none;
+      }
+      @media (max-width: 768px) {
+        .info-block {
+          padding: 20px;
+        }
+        .pc {
+          display: none;
+        }
+        .sp {
+          display: block;
+        }
+        .half-section {
+          height: 100dvh;
+        }
+        .flex {
+          display: flex;
+          align-items: start;
+          gap: 15px;
+        }
+        .bottom-half {
+          bottom: 0;
+          transform: rotate(0);
+        }
+        .block-top-left {
+          bottom: 0;
+          top: auto;
+        }
+      }
+    </style>
+    <!-- <script src="https://unpkg.com/context-filter-polyfill"></script> -->
+  </head>
+  <body
+    onCopy="alert('コピー禁止'); return false;"
+    onContextmenu="return false;"
+  >
+    <canvas id="main-canvas"></canvas>
+
+    <div class="info-overlay pc">
+      <!-- 上半分 -->
+      <div class="half-section top-half">
+        <!-- 左上（英語） -->
+        <div class="info-block block-top-left">
+          <h1>PRISM</h1>
+          <h2>Tama Art University Graduate School</h2>
+          <h1>
+            INTERACTION DESIGN<br />
+            Graduate Exhibition 2025
+          </h1>
+          <p>
+            Dates<br />
+            March 20 (Fri) - March 22 (Sun)<br />
+            10:30 AM - 5:30 PM
+          </p>
+          <p>
+            Venue<br />
+            Machida Pario - 4th Floor, Pario Field<br />
+            1-15-13 Morino, Machida-shi, Tokyo 194-0022, Japan
+          </p>
+          <p class="sub-text">
+            In cooperation with: Machida Pario<br />
+            Organized by: Information Design Program, Graduate School, Tama Art
+            University<br />
+            Contact: design-a@ml.idd.tamabi.ac.jp
+          </p>
+          <img
+            class="logo"
+            src="./assets/img/pario_logo.jpg"
+            alt="パリオ応援プログラム"
+          />
+        </div>
+
+        <!-- ★★★ 変更点: 右上（日本語）のHTML順序 ★★★ -->
+        <div class="info-block block-top-right">
+          <!-- 縦組 (上) -->
+          <div class="vertical-jp">
+            <h1>PRISM</h1>
+            <h2>多摩美術大学大学院</h2>
+            <h1>
+              情報デザイン研究領域<br />
+              研究制作展 2025
+            </h1>
+          </div>
+          <!-- 90度回転 (下) -->
+          <div class="rotated-jp">
+            <img
+              class="logo"
+              src="./assets/img/pario_logo.jpg"
+              alt="パリオ応援プログラム"
+            />
+            <div>
+              <p class="sub-text">
+                協力：町田パリオ<br />
+                主催：多摩美術大学大学院情報デザイン研究領域<br />
+                お問い合わせ先：design-a@ml.idd.tamabi.ac.jp
+              </p>
+              <p>
+                日時<br />
+                3/20(金)-3/22(日) 10:30-17:30
+              </p>
+              <p>
+                展示場所<br />
+                町田パリオ4階パリオフィールド<br />
+                〒194-0022<br />
+                東京都町田市森野1丁目15-13
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ★★★ 変更点: 下半分 (中身は上と同一) ★★★ -->
+      <div class="half-section bottom-half">
+        <!-- 左上（英語） -->
+        <div class="info-block block-top-left">
+          <h1>PRISM</h1>
+          <h2>Tama Art University Graduate School</h2>
+          <h1>
+            INTERACTION DESIGN<br />
+            Graduate Exhibition 2025
+          </h1>
+          <p>
+            Dates<br />
+            March 20 (Fri) - March 22 (Sun)<br />
+            10:30 AM - 5:30 PM
+          </p>
+          <p>
+            Venue<br />
+            Machida Pario - 4th Floor, Pario Field<br />
+            1-15-13 Morino, Machida-shi, Tokyo 194-0022, Japan
+          </p>
+          <p class="sub-text">
+            In cooperation with: Machida Pario<br />
+            Organized by: Information Design Program, Graduate School, Tama Art
+            University<br />
+            Contact: design-a@ml.idd.tamabi.ac.jp
+          </p>
+          <img
+            class="logo"
+            src="./assets/img/pario_logo.jpg"
+            alt="パリオ応援プログラム"
+          />
+        </div>
+
+        <!-- ★★★ 変更点: 右上（日本語）のHTML順序 ★★★ -->
+        <div class="info-block block-top-right">
+          <!-- 縦組 (上) -->
+          <div class="vertical-jp">
+            <h1>PRISM</h1>
+            <h2>多摩美術大学大学院</h2>
+            <h1>
+              情報デザイン研究領域<br />
+              研究制作展 2025
+            </h1>
+          </div>
+          <!-- 90度回転 (下) -->
+          <div class="rotated-jp">
+            <img
+              class="logo"
+              src="./assets/img/pario_logo.jpg"
+              alt="パリオ応援プログラム"
+            />
+            <div>
+              <p class="sub-text">
+                協力：町田パリオ<br />
+                主催：多摩美術大学大学院情報デザイン研究領域<br />
+                お問い合わせ先：design-a@ml.idd.tamabi.ac.jp
+              </p>
+              <p>
+                日時<br />
+                3/20(金)-3/22(日) 10:30-17:30
+              </p>
+              <p>
+                展示場所<br />
+                町田パリオ4階パリオフィールド<br />
+                〒194-0022<br />
+                東京都町田市森野1丁目15-13
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-overlay sp">
+      <!-- 上半分 -->
+      <div class="half-section top-half">
+        <!-- 左上（英語） -->
+        <!-- <div class="info-block block-top-left">
+          <h1>PRISM</h1>
+          <h2>Tama Art University Graduate School</h2>
+          <h1>
+            INTERACTION DESIGN<br />
+            Graduate Exhibition 2025
+          </h1>
+          <p>
+            Dates<br />
+            March 20 (Fri) - March 22 (Sun)<br />
+            10:30 AM - 5:30 PM
+          </p>
+          <p>
+            Venue<br />
+            Machida Pario - 4th Floor, Pario Field<br />
+            1-15-13 Morino, Machida-shi, Tokyo 194-0022, Japan
+          </p>
+          <p class="sub-text">
+            In cooperation with: Machida Pario<br />
+            Organized by: Information Design Program, Graduate School, Tama Art
+            University<br />
+            Contact: design-a@ml.idd.tamabi.ac.jp
+          </p>
+          <img
+            class="logo"
+            src="./assets/img/pario_logo.jpg"
+            alt="パリオ応援プログラム"
+          />
+        </div> -->
+
+        <!-- ★★★ 変更点: 右上（日本語）のHTML順序 ★★★ -->
+        <div class="info-block block-top-right">
+          <!-- 縦組 (上) -->
+          <div class="vertical-jp">
+            <h1>PRISM</h1>
+            <h2>多摩美術大学大学院</h2>
+            <h1>
+              情報デザイン研究領域<br />
+              研究制作展 2025
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- ★★★ 変更点: 下半分 (中身は上と同一) ★★★ -->
+      <div class="half-section bottom-half">
+        <!-- 左上（英語） -->
+        <div class="info-block block-top-left">
+          <p>
+            日時<br />
+            3/20(金)-3/22(日) 10:30-17:30
+          </p>
+          <p>
+            展示場所<br />
+            町田パリオ4階パリオフィールド<br />
+            〒194-0022<br />
+            東京都町田市森野1丁目15-13
+          </p>
+          <div class="flex">
+            <img
+              class="logo"
+              src="./assets/img/pario_logo.jpg"
+              alt="パリオ応援プログラム"
+            />
+            <p class="sub-text">
+              協力：町田パリオ<br />
+              主催：多摩美術大学大学院情報デザイン研究領域<br />
+              お問い合わせ先：design-a@ml.idd.tamabi.ac.jp
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- 設定 ---
+      const NUM_LOBES_PER_QUADRANT = 3;
+      const BASE_RADIUS_SCALE = 300;
+      const NUM_POINTS_PER_LOBE = 5;
+
+      // --- グローバル変数 ---
+      const canvas = document.getElementById("main-canvas");
+      const ctx = canvas.getContext("2d");
+      let core;
+      let hueBase = 200;
+
+      // 対称コアクラス
+      class SymmetricCore {
+        constructor(w, h) {
+          this.halfWidth = w / 2;
+          this.halfHeight = h / 2;
+          this.lobes = [];
+
+          this.hue = hueBase + (Math.random() - 0.5) * 60;
+          this.symmetryMode = Math.random() > 0.5 ? "line" : "rotational";
+
+          this.colorLayers = [
+            {
+              hue: 40,
+              saturation: 30,
+              lightness: 80,
+              alpha: 0.7,
+              radiusScale: 1.8,
+              blur: 35,
+            },
+            {
+              hue: 210,
+              saturation: 70,
+              lightness: 60,
+              alpha: 0.6,
+              radiusScale: 1.3,
+              blur: 25,
+            },
+            {
+              hue: 220,
+              saturation: 80,
+              lightness: 30,
+              alpha: 0.4,
+              radiusScale: 1.0,
+              blur: 15,
+            },
+            {
+              hue: 40,
+              saturation: 40,
+              lightness: 70,
+              alpha: 0.8,
+              radiusScale: 0.8,
+              blur: 10,
+            },
+          ];
+
+          for (let i = 0; i < NUM_LOBES_PER_QUADRANT; i++) {
+            const baseRadius = BASE_RADIUS_SCALE * (Math.random() * 0.7 + 0.3);
+
+            let cx, cy;
+            if (this.symmetryMode === "line") {
+              cx = Math.random() * this.halfWidth * 0.8;
+              cy = Math.random() * this.halfHeight * 0.8;
+            } else {
+              cx = Math.random() * this.halfWidth * 0.8;
+              cy = Math.random() * this.halfHeight * 0.2;
+            }
+
+            const points = this.createOrganicShapePoints(cx, cy, baseRadius);
+
+            this.lobes.push({
+              cx: cx,
+              cy: cy,
+              points: points,
+              baseRadius: baseRadius,
+            });
+          }
+        }
+
+        createOrganicShapePoints(cx, cy, baseRadius) {
+          const points = [];
+          const numPoints = NUM_POINTS_PER_LOBE;
+
+          for (let i = 0; i < numPoints; i++) {
+            const randomRadius = baseRadius * (Math.random() * 0.6 + 0.7);
+            let x, y;
+            const side = Math.floor(Math.random() * 4);
+            if (side === 0) {
+              x = (Math.random() - 0.5) * randomRadius;
+              y = -randomRadius * 0.5;
+            } else if (side === 1) {
+              x = randomRadius * 0.5;
+              y = (Math.random() - 0.5) * randomRadius;
+            } else if (side === 2) {
+              x = (Math.random() - 0.5) * randomRadius;
+              y = randomRadius * 0.5;
+            } else {
+              x = -randomRadius * 0.5;
+              y = (Math.random() - 0.5) * randomRadius;
+            }
+
+            const angle = Math.atan2(y, x);
+
+            points.push({
+              x: cx + x,
+              y: cy + y,
+              angle: angle,
+            });
+          }
+          points.sort((a, b) => a.angle - b.angle);
+          return points;
+        }
+
+        drawLobeLayers(ctx) {
+          this.lobes.forEach((lobe) => {
+            this.colorLayers.forEach((c) => {
+              ctx.save();
+              ctx.filter = `blur(${c.blur}px)`;
+
+              const currentHue = (this.hue + c.hue) % 360;
+              const layerRadius = lobe.baseRadius * c.radiusScale;
+
+              const grad = ctx.createRadialGradient(
+                lobe.cx,
+                lobe.cy,
+                0,
+                lobe.cx,
+                lobe.cy,
+                layerRadius
+              );
+
+              grad.addColorStop(
+                0,
+                `hsla(${currentHue}, ${c.saturation}%, ${c.lightness}%, ${
+                  c.alpha * 0.8
+                })`
+              );
+              grad.addColorStop(
+                0.7,
+                `hsla(${currentHue}, ${c.saturation}%, ${c.lightness}%, ${c.alpha})`
+              );
+              grad.addColorStop(
+                1,
+                `hsla(${currentHue}, ${c.saturation}%, ${c.lightness}%, 0)`
+              );
+
+              ctx.fillStyle = grad;
+
+              ctx.beginPath();
+
+              const p0 = lobe.points[0];
+              const dx0 = (p0.x - lobe.cx) * c.radiusScale;
+              const dy0 = (p0.y - lobe.cy) * c.radiusScale;
+              ctx.moveTo(lobe.cx + dx0, lobe.cy + dy0);
+
+              for (let i = 1; i < lobe.points.length; i++) {
+                const p = lobe.points[i];
+                const dx = (p.x - lobe.cx) * c.radiusScale;
+                const dy = (p.y - lobe.cy) * c.radiusScale;
+                ctx.lineTo(lobe.cx + dx, lobe.cy + dy);
+              }
+
+              ctx.closePath();
+              ctx.fill();
+
+              ctx.restore();
+            });
+          });
+        }
+
+        draw(ctx) {
+          ctx.save();
+
+          ctx.translate(this.halfWidth, this.halfHeight);
+          ctx.globalCompositeOperation = "lighter";
+
+          if (this.symmetryMode === "line") {
+            ctx.save();
+            ctx.scale(1, 1);
+            this.drawLobeLayers(ctx);
+            ctx.restore();
+
+            ctx.save();
+            ctx.scale(-1, 1);
+            this.drawLobeLayers(ctx);
+            ctx.restore();
+
+            ctx.save();
+            ctx.scale(1, -1);
+            this.drawLobeLayers(ctx);
+            ctx.restore();
+
+            ctx.save();
+            ctx.scale(-1, -1);
+            this.drawLobeLayers(ctx);
+            ctx.restore();
+          } else {
+            const rotation = Math.PI / 2;
+            this.drawLobeLayers(ctx);
+
+            ctx.rotate(rotation);
+            this.drawLobeLayers(ctx);
+
+            ctx.rotate(rotation);
+            this.drawLobeLayers(ctx); 
+
+            ctx.rotate(rotation);
+            this.drawLobeLayers(ctx);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      function initAndDraw() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        hueBase = Math.random() * 360;
+        core = new SymmetricCore(canvas.width, canvas.height);
+
+        drawStaticCore();
+      }
+
+      function drawStaticCore() {
+        ctx.save();
+        ctx.filter = "none";
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        if (core) {
+          core.draw(ctx);
+        }
+      }
+
+      // --- イベントリスナー ---
+      window.addEventListener("click", (e) => {
+        initAndDraw(); // 常に再生成を実行
+      });
+
+      let resizeTimer;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        // ★★★ 修正点: 関数名を 'initAndSymmetricCore' から 'initAndDraw' に修正 ★★★
+        resizeTimer = setTimeout(initAndDraw, 100); 
+      });
+
+      // --- 実行 ---
+      initAndDraw();
+    </script>
+  </body>
+</html>
