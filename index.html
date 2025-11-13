@@ -2,11 +2,33 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
+      name="format-detection"
+      content="telephone=no, email=no, address=no"
     />
-<meta name="format-detection" content="telephone=no, email=no, address=no">
+    <meta
+      name="description"
+      content="多摩美術大学大学院 情報デザイン研究領域 研究制作展2025「PRISM」を2026年3月20日（金）〜22日（日）に町田パリオにて開催。"
+    />
+    <link rel="icon" href="./assets/img/favicon.ico" sizes="any" />
+    <!-- OGP設定 -->
+    <meta
+      property="og:title"
+      content="PRISM - 多摩美術大学大学院 情報デザイン研究領域 研究制作展2025"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://26.idd-master.com/" />
+    <meta
+      property="og:image"
+      content="https://26.idd-master.com/（ここに表示したいメイン画像のURLを入れます）"
+    />
+    <meta
+      property="og:description"
+      content="多摩美術大学大学院 情報デザイン研究領域 研究制作展2025「PRISM」を2026年3月20日（金）〜22日（日）に町田パリオにて開催。"
+    />
+    <!-- X (Twitter) 用 -->
+    <meta name="twitter:card" content="summary_large_image" />
     <title>
       PRISM - 多摩美術大学大学院 情報デザイン研究領域 研究制作展 2025
     </title>
@@ -30,6 +52,7 @@
         -khtml-user-select: none;
         -webkit-user-drag: none;
         -khtml-user-drag: none;
+        touch-action: none;
       }
       #main-canvas {
         display: block;
@@ -634,7 +657,7 @@
             this.drawLobeLayers(ctx);
 
             ctx.rotate(rotation);
-            this.drawLobeLayers(ctx); 
+            this.drawLobeLayers(ctx);
 
             ctx.rotate(rotation);
             this.drawLobeLayers(ctx);
@@ -668,16 +691,93 @@
       }
 
       // --- イベントリスナー ---
+
+      // ★★★ 変更点: 'click' と 'touchend' のリスナーを削除し、
+      // 'pointerup' に統合します (マウスとタッチ両対応) ★★★
+
+      /* // 従来の 'click' リスナーは削除
       window.addEventListener("click", (e) => {
-        initAndDraw(); // 常に再生成を実行
+        initAndDraw();
       });
+      */
 
       let resizeTimer;
       window.addEventListener("resize", () => {
         clearTimeout(resizeTimer);
-        // ★★★ 修正点: 関数名を 'initAndSymmetricCore' から 'initAndDraw' に修正 ★★★
-        resizeTimer = setTimeout(initAndDraw, 100); 
+        resizeTimer = setTimeout(initAndDraw, 100);
       });
+      // ★★★ 追加: PCのトラックパッド（ホイール＋Ctrlキー）によるズームを無効化 ★★★
+      document.addEventListener(
+        "wheel",
+        function (e) {
+          // ctrlKey が true の場合、ブラウザのズーム動作をキャンセル
+          if (e.ctrlKey) {
+            e.preventDefault();
+          }
+        },
+        { passive: false } // preventDefault を呼ぶために passive: false を指定
+      );
+
+      // ★★★ 変更点: ジェスチャー（ピンチイン/アウト）を無効化 ★★★
+      // (この部分は変更ありません)
+      document.addEventListener(
+        "gesturestart",
+        function (e) {
+          e.preventDefault();
+        },
+        { passive: false }
+      );
+      document.addEventListener(
+        "gesturechange",
+        function (e) {
+          e.preventDefault();
+        },
+        { passive: false }
+      );
+      document.addEventListener(
+        "gestureend",
+        function (e) {
+          e.preventDefault();
+        },
+        { passive: false }
+      );
+
+      // ★★★ 変更点: ダブルタップ防止と再生成ロジックを 'pointerup' に統合 ★★★
+      let lastPointerUp = 0;
+      document.addEventListener(
+        "pointerup", // 'touchend' や 'click' の代わりに 'pointerup' を使用
+        function (event) {
+          // (1) info-block (テキスト領域)上での操作は無視する
+          if (event.target.closest(".info-block")) {
+            return;
+          }
+
+          const now = new Date().getTime();
+          if (now - lastPointerUp <= 300) {
+            // (2) ダブルタップ/ダブルクリックと判定
+            //     -> ズーム防止のためデフォルト動作をキャンセル
+            event.preventDefault();
+          } else {
+            // (3) シングルタップ/シングルクリックと判定
+            //     -> 再生成を実行
+            initAndDraw();
+          }
+          lastPointerUp = now;
+        },
+        { passive: false }
+      );
+
+      /*
+      // 従来の 'touchend' リスナーは削除
+      let lastTouchEnd = 0;
+      document.addEventListener(
+        "touchend",
+        function (event) {
+          // ... (省略) ...
+        },
+        { passive: false }
+      );
+      */
 
       // --- 実行 ---
       initAndDraw();
