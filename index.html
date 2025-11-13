@@ -742,15 +742,18 @@
         { passive: false }
       );
 
-      // ★★★ 変更点: ダブルタップ防止と再生成ロジックを 'pointerup' に統合 ★★★
+      // ★★★ 変更点: 'pointerup' リスナーを修正 ★★★
       let lastPointerUp = 0;
       document.addEventListener(
-        "pointerup", // 'touchend' や 'click' の代わりに 'pointerup' を使用
+        "pointerup",
         function (event) {
+          // ★★★ 変更点: info-block上でのクリックを無視する処理を削除 ★★★
+          /*
           // (1) info-block (テキスト領域)上での操作は無視する
           if (event.target.closest(".info-block")) {
             return;
           }
+          */
 
           const now = new Date().getTime();
           if (now - lastPointerUp <= 300) {
